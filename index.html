@@ -33,31 +33,31 @@
     <script>
         class Field {
             constructor(selector, rowsNum, colsNum) {
-                this._gameEnd = false;
+                this._gameEnd = false; /*окончание игры*/
 
-                this._field = document.querySelector(selector);
-                this._colsNum = colsNum;
-                this._rowsNum = rowsNum;
+                this._field = document.querySelector(selector); /*ссылка на игровое поле*/
+                this._colsNum = colsNum; /*к-во колонок*/
+                this._rowsNum = rowsNum; /*к-во рядов*/
 
-                this._dots = new Dots;
+                this._dots = new Dots; /*все точки на поле*/
                 this._html = new HTML;
-                this._queue = new Queue(['gamer1', 'gamer2']);
+                this._queue = new Queue(['gamer1', 'gamer2']); /*очередь: игрок 1, игрок 2*/
 
-                this._html.createTable(this._field, this._rowsNum, this._colsNum);
+                this._html.createTable(this._field, this._rowsNum, this._colsNum); /*создаем табличку*/
                 this._run();
             }
 
             _run() {
-                this._field.addEventListener('click', () => {
-                    let cell = event.target.closest('td:not(.gamer)');
+                this._field.addEventListener('click', () => { /*навешивается событие на игровое поле*/
+                    let cell = event.target.closest('td:not(.gamer)'); /*gamer - ячейка занята игроком, не можем занять уже занятую ячейку*/
 
                     if (!this._gameEnd && cell) {
                         let col = this._html.getPrevSiblingsNum(cell);
                         let row = this._html.getPrevSiblingsNum(cell.parentElement);
 
                         let gamer = this._queue.getGamer();
-                        let dot = new Dot(gamer, cell, row, col, this._dots);
-                        this._dots.add(dot, row, col);
+                        let dot = new Dot(gamer, cell, row, col, this._dots); /*создаю новую точку*/
+                        this._dots.add(dot, row, col); /*добавляю эту точку, обьект всех точек на нашем игровом поле*/
                         console.log(dot);
 
                         let winLine = this._checkWin(dot);
@@ -73,13 +73,13 @@
                 this._notifyWinnerCells(winLine);
             }
 
-            _notifyWinnerCells(winLine) {
+            _notifyWinnerCells(winLine) { /*известить ячейки что они победители*/
                 winLine.forEach((dot) => {
                     dot.becomeWinner();
                 });
             }
 
-            _checkWin(dot) {
+            _checkWin(dot) { /*вернет массив координат точек победителей*/
                 let dirs = [
                     { deltaRow: 0, deltaCol: -1 },
                     { deltaRow: -1, deltaCol: -1 },
@@ -98,14 +98,14 @@
                 return false;
             }
 
-            _checkLine(dot, deltaRow, deltaCol) {
+            _checkLine(dot, deltaRow, deltaCol) { /*проверяет одно с 4 направлений, проверяет линию*/
                 let dir1 = this._checkDir(dot, deltaRow, deltaCol);
                 let dir2 = this._checkDir(dot, -deltaRow, -deltaCol);
 
-                return [].concat(dir1, [dot], dir2);
+                return [].concat(dir1, [dot], dir2); /*делаем линию точек*/
             }
 
-            _checkDir(dot, deltaRow, deltaCol) {
+            _checkDir(dot, deltaRow, deltaCol) { /*проверяет одно с 8 направлений, deltaRow, deltaCol - направление проверки, результат - массив обьектов Dot*/
                 let result = [];
                 let neighbor = dot;
 
@@ -121,7 +121,7 @@
             }
         }
 
-        class Dots {
+        class Dots { /*обьект, в котором хранятся все точки по кординатам на нашем игровом поле*/
             constructor() {
                 this._dots = {};
             }
@@ -131,7 +131,7 @@
                     this._dots[row] = {};
                 }
 
-                this._dots[row][col] = dot;
+                this._dots[row][col] = dot; /*добавляет заполненную точку*/
             }
 
             get(row, col) {
@@ -143,22 +143,22 @@
             }
         }
 
-        class Dot {
+        class Dot { /*игровая точка, когда ставим точку, созд обьект класа Dot*/
             constructor(gamer, elem, row, col, dots) {
-                this._gamer = gamer;
-                this._elem = elem;
-                this._row = row;
-                this._col = col;
+                this._gamer = gamer; /*имя игрока*/
+                this._elem = elem; /*ссылка на ДОМ елемнт в котором поставили точку*/
+                this._row = row; /*ряд точки*/
+                this._col = col; /*колонка точки*/
                 this._dots = dots;
 
-                this._neighbors = {}; // {-1: {1: Dot, 0: Dot}, 0: {1: Dot}}
+                this._neighbors = {}; // {-1: {1: Dot, 0: Dot}, 0: {1: Dot}} /*соседи, каждая точка знает своих соседов*/
 
                 this._findNeighbors();
                 this._notifyNeighbors();
                 this._reflect();
             }
 
-            getRow() {
+            getRow() { /*возвращает текущий ряд*/
                 return this._row;
             }
 
@@ -166,11 +166,11 @@
                 return this._col;
             }
 
-            becomeWinner() {
+            becomeWinner() { /*стань победителем*/
                 this._elem.classList.add('winner');
             }
 
-            getNeighbor(deltaRow, deltaCol) {
+            getNeighbor(deltaRow, deltaCol) { /*получает своего соседа. deltaRow, deltaCol - смещения*/
                 if (this._neighbors[deltaRow] !== undefined) {
                     return this._neighbors[deltaRow][deltaCol];
                 } else {
@@ -178,9 +178,9 @@
                 }
             }
 
-            addNeighbor(neighbor) {
-                let deltaRow = neighbor.getRow() - this._row;
-                let deltaCol = neighbor.getCol() - this._col;
+            addNeighbor(neighbor) { /*добавить соседа, передаем обьект соседа*/
+                let deltaRow = neighbor.getRow() - this._row; /*получаем ряд соседа*/
+                let deltaCol = neighbor.getCol() - this._col; /*получаем колонку соседа*/
 
                 if (this._neighbors[deltaRow] === undefined) {
                     this._neighbors[deltaRow] = {};
@@ -189,7 +189,7 @@
                 this._neighbors[deltaRow][deltaCol] = neighbor;
             }
 
-            _findNeighbors() {
+            _findNeighbors() { /*рассматривает 8 точек вокруг*/
                 this._considerNeighbor(1, 1);
                 this._considerNeighbor(1, 0);
                 this._considerNeighbor(1, -1);
@@ -200,15 +200,15 @@
                 this._considerNeighbor(0, -1);
             }
 
-            _considerNeighbor(deltaRow, deltaCol) {
+            _considerNeighbor(deltaRow, deltaCol) { /*рассмотреть соседа, проверяет есть ли сосед*/
                 let neighbor = this._dots.get(this._row + deltaRow, this._col + deltaCol);
 
-                if (neighbor !== undefined && neighbor._belongsTo(this._gamer)) {
+                if (neighbor !== undefined && neighbor._belongsTo(this._gamer)) { /*проверяет принадлежит ли тому же игроку (желтому или зеленому)*/
                     this.addNeighbor(neighbor);
                 }
             }
 
-            _notifyNeighbors() {
+            _notifyNeighbors() { /*информирует о новом рядомстоящем соседе*/
                 for (let rowKey in this._neighbors) {
                     for (let colKey in this._neighbors[rowKey]) {
                         this._neighbors[rowKey][colKey].addNeighbor(this);
@@ -216,7 +216,7 @@
                 }
             }
 
-            _reflect() {
+            _reflect() { /*отражает именение обьекта в ДОМ*/
                 this._elem.classList.add('gamer');
                 this._elem.classList.add(this._gamer);
             }
@@ -226,18 +226,18 @@
             }
         }
 
-        class Queue {
+        class Queue { /*очередь*/
             constructor(gamers) {
                 this._gamers = gamers;
                 this._counter = new Counter(this._gamers.length);
             }
 
-            getGamer() {
+            getGamer() { /*каждый раз вызывает нового игрока*/
                 return this._gamers[this._counter.get()];
             }
         }
 
-        class Counter { // 3
+        class Counter { // 3 /*считает количество вызовов, бегает по кругу, если задали 3, то 012, 012, 012*/
             constructor(length) {
                 this._length = length;
                 this._counter = null;
@@ -279,7 +279,7 @@
                 parent.appendChild(table);
             }
 
-            getPrevSiblingsNum(elem) {
+            getPrevSiblingsNum(elem) { /*считает количество предыдущих соседей*/
                 let prev = elem.previousSibling;
                 let i = 0;
 
@@ -293,7 +293,7 @@
         }
 
 
-        new Field('#game', 30, 20);
+        new Field('#game', 30, 20); /*точка входа, создаем игровое поле, количество рядов и колонок*/
     </script>
 </body>
 
